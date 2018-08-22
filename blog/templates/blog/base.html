@@ -11,6 +11,11 @@
     </head>
     <body>
         <div class="page-header">
+
+<!--          <div>
+            <a href = "{% url 'auth_new'}">Log Out</a>
+          </div>
+-->
           <div class="top-menu">
 
             {% if user.is_authenticated %}
@@ -20,6 +25,7 @@
             {% endif %}
 
           </div>
+
             <h1><a href="{% url 'post_list' %}">Oleg's First Django blog</a></h1>
         </div>
 

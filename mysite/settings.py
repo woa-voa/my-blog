@@ -51,6 +51,8 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.security.SecurityMiddleware',
 )
 
+SECURE_SSL_REDIRECT = True
+
 ROOT_URLCONF = 'mysite.urls'
 
 TEMPLATES = [
