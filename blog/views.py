@@ -1,7 +1,12 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.utils import timezone
 from .models import Post
-from .forms import PostForm
+from .forms import PostForm, CustomUserCreationForm
+
+from django.contrib import messages
+from django.contrib import auth
+from django.contrib.auth.decorators import login_required
+from django.core.exceptions import ValidationError
 
 # Create your views here.
 
@@ -42,21 +47,53 @@ def post_edit(request, pk):
 
             return redirect('post_detail', pk=post.pk)
     else:
-        form = PostForm(instance=post)
+        form = PostForm(instance = post)
     return render(request, 'blog/post_edit.html', {'form': form})
 
-def auth_new(request):
-    if request.method == "POST":
-        form = AuthForm(request.USER)
-        if form.is_valid():
-            user = form.save(commit = False)
-            user.username = request.username
-            user.email = request.email
-            user.password = request.password
-            user.save()
 
+def RegisterFormView(request):
+    if request.method == 'POST':
+        form = CustomUserCreationForm(request.POST)
+        if form.is_valid():
+            form.save()
+            #messages.success(request, 'Account created successfully')
+
+            f_username = form.cleaned_data.get('username')
+            f_password = form.cleaned_data.get('password1')
+            user = auth.authenticate(username = f_username, password = f_password)
+            auth.login(request, user)
             return redirect('post_list')
     else:
-        form = PostForm()
+        form = CustomUserCreationForm()
 
-    return render(request, 'blog/post_edit.html', {'form': form})
+    return render(request, 'blog/register.html', {'form': form})
+
+
+def LoginFormView(request):
+    if request.user.is_authenticated():
+        return redirect('post_list')
+
+    if request.method == 'POST':
+        entered_username = request.POST.get('username')
+        entered_password = request.POST.get('password')
+        user = auth.authenticate(username = entered_username, password = entered_password)
+
+        if user is not None:
+            auth.login(request, user)
+            return redirect('post_list')
+        else:
+            messages.error(request, 'Error: wrong username/password')
+
+    return render(request, 'blog/login.html')
+
+def LogoutView(request):
+    auth.logout(request)
+    return redirect('post_list')
+
+'''
+def admin_page(request):
+    if not request.user.is_authenticated():
+        return redirect('LoginFormView')
+
+    return render(request, 'blog/admin_page.html')
+'''
